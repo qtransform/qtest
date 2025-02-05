@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 
 namespace MvcMusicStore.Controllers
@@ -26,41 +27,42 @@ namespace MvcMusicStore.Controllers
         // POST: /Checkout/AddressAndPayment
 
         [HttpPost]
-        public ActionResult AddressAndPayment(IFormCollection values)
+        public ActionResult AddressAndPayment([FromForm] Order order, [FromForm] string PromoCode)
         {
-            var order = new Order();
-            TryUpdateModel(order);
-
-            try
+            if (ModelState.IsValid)
             {
-                if (string.Equals(values["PromoCode"], PromoCode,
-                    StringComparison.OrdinalIgnoreCase) == false)
+                try
                 {
+                    if (string.Equals(PromoCode, this.PromoCode, StringComparison.OrdinalIgnoreCase))
+                    {
+                        order.Username = User.Identity.Name;
+                        order.OrderDate = DateTime.Now;
+
+                        //Save Order
+                        storeDB.Orders.Add(order);
+                        storeDB.SaveChanges();
+
+                        //Process the order
+                        var cart = ShoppingCart.GetCart(this.HttpContext);
+                        cart.CreateOrder(order);
+
+                        return RedirectToAction("Complete", new { id = order.OrderId });
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("PromoCode", "Invalid promo code");
+                        return View(order);
+                    }
+                }
+                catch
+                {
+                    //Invalid - redisplay with errors
                     return View(order);
                 }
-                else
-                {
-                    order.Username = User.Identity.Name;
-                    order.OrderDate = DateTime.Now;
-
-                    //Save Order
-                    storeDB.Orders.Add(order);
-                    storeDB.SaveChanges();
-
-                    //Process the order
-                    var cart = ShoppingCart.GetCart(this.HttpContext);
-                    cart.CreateOrder(order);
-
-                    return RedirectToAction("Complete",
-                        new { id = order.OrderId });
-                }
-
             }
-            catch
-            {
-                //Invalid - redisplay with errors
-                return View(order);
-            }
+
+            //If we got this far, something failed, redisplay form
+            return View(order);
         }
 
         //

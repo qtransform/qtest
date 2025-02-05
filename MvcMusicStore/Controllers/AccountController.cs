@@ -1,13 +1,22 @@
 using MvcMusicStore.Models;
 using System;
-using System.Web.Security;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 
 
 namespace MvcMusicStore.Controllers
 {
-    public class AccountController : Controller
+public class AccountController : Controller
+{
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+
+    public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
     {
+        _userManager = userManager;
+        _signInManager = signInManager;
+    }
 
         private void MigrateShoppingCart(string UserName)
         {
@@ -83,24 +92,26 @@ namespace MvcMusicStore.Controllers
         // POST: /Account/Register
 
         [HttpPost]
-        public ActionResult Register(RegisterModel model)
+        public async Task<ActionResult> Register(RegisterModel model)
         {
             if (ModelState.IsValid)
             {
-                // Attempt to register the user
-                MembershipCreateStatus createStatus;
-                Membership.CreateUser(model.UserName, model.Password, model.Email, "question", "answer", true, null, out createStatus);
+                var user = new ApplicationUser { UserName = model.UserName, Email = model.Email };
+                var result = await _userManager.CreateAsync(user, model.Password);
 
-                if (createStatus == MembershipCreateStatus.Success)
+                if (result.Succeeded)
                 {
                     MigrateShoppingCart(model.UserName);
 
-                    FormsAuthentication.SetAuthCookie(model.UserName, false /* createPersistentCookie */);
+                    await _signInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", "Home");
                 }
                 else
                 {
-                    ModelState.AddModelError("", ErrorCodeToString(createStatus));
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("", error.Description);
+                    }
                 }
             }
 
@@ -162,44 +173,7 @@ namespace MvcMusicStore.Controllers
             return View();
         }
 
-        #region Status Codes
-        private static string ErrorCodeToString(MembershipCreateStatus createStatus)
-        {
-            // See http://go.microsoft.com/fwlink/?LinkID=177550 for
-            // a full list of status codes.
-            switch (createStatus)
-            {
-                case MembershipCreateStatus.DuplicateUserName:
-                    return "User name already exists. Please enter a different user name.";
-
-                case MembershipCreateStatus.DuplicateEmail:
-                    return "A user name for that e-mail address already exists. Please enter a different e-mail address.";
-
-                case MembershipCreateStatus.InvalidPassword:
-                    return "The password provided is invalid. Please enter a valid password value.";
-
-                case MembershipCreateStatus.InvalidEmail:
-                    return "The e-mail address provided is invalid. Please check the value and try again.";
-
-                case MembershipCreateStatus.InvalidAnswer:
-                    return "The password retrieval answer provided is invalid. Please check the value and try again.";
-
-                case MembershipCreateStatus.InvalidQuestion:
-                    return "The password retrieval question provided is invalid. Please check the value and try again.";
-
-                case MembershipCreateStatus.InvalidUserName:
-                    return "The user name provided is invalid. Please check the value and try again.";
-
-                case MembershipCreateStatus.ProviderError:
-                    return "The authentication provider returned an error. Please verify your entry and try again. If the problem persists, please contact your system administrator.";
-
-                case MembershipCreateStatus.UserRejected:
-                    return "The user creation request has been canceled. Please verify your entry and try again. If the problem persists, please contact your system administrator.";
-
-                default:
-                    return "An unknown error occurred. Please verify your entry and try again. If the problem persists, please contact your system administrator.";
-            }
-        }
-        #endregion
+        // This method is no longer needed as we're handling errors directly in the Register method
+        // You can remove it if it's not used elsewhere in your application
     }
 }

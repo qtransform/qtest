@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MvcMusicStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bcf2d902fa29d5ed20580cec9b36e3dc1391761a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+313bca914e0c9f6062224eca8abdec5b50707ef0")]
 [assembly: System.Reflection.AssemblyProductAttribute("MvcMusicStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MvcMusicStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

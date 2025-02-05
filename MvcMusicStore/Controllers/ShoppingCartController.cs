@@ -80,7 +80,6 @@ namespace MvcMusicStore.Controllers
         //
         // GET: /ShoppingCart/CartSummary
 
-        [ChildActionOnly]
         public ActionResult CartSummary()
         {
             var cart = ShoppingCart.GetCart(this.HttpContext);

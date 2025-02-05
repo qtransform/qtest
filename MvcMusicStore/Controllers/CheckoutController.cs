@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 
 namespace MvcMusicStore.Controllers
@@ -25,7 +26,7 @@ namespace MvcMusicStore.Controllers
         // POST: /Checkout/AddressAndPayment
 
         [HttpPost]
-        public ActionResult AddressAndPayment(FormCollection values)
+        public ActionResult AddressAndPayment(IFormCollection values)
         {
             var order = new Order();
             TryUpdateModel(order);

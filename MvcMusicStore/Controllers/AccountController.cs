@@ -73,11 +73,11 @@ namespace MvcMusicStore.Controllers
         //
         // GET: /Account/LogOff
 
-        public ActionResult LogOff()
+        public async Task<IActionResult> LogOff()
         {
-            FormsAuthentication.SignOut();
+            await _signInManager.SignOutAsync();
 
-            Session.Abandon();
+            HttpContext.Session.Clear();
 
             return RedirectToAction("Logon", "Account");
         }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 
 namespace MvcMusicStore.Controllers
@@ -25,7 +26,7 @@ namespace MvcMusicStore.Controllers
             var cart = ShoppingCart.GetCart(this.HttpContext);
 
             cart.MigrateCart(UserName);
-            Session[ShoppingCart.CartSessionKey] = UserName;
+            HttpContext.Session.SetString(ShoppingCart.CartSessionKey, UserName);
         }
 
         //
